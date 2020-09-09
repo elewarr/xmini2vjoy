@@ -65,6 +65,7 @@ axis = 0    # type: int
 loop_delay = 0.010   # type: float
 cycle_delay = 0.020  # type: float
 
+buttons = {}
 
 def map_cc_buttons(cc, button1, button2):
 
@@ -99,52 +100,17 @@ def map_cc_axis(cc):
     """ maps an X-Mini's slider to a vJoy axis, axis value returned """
 
     if (midi[0].data.buffer[0] == cc) and (midi[0].data.status == MidiStatus.Control):
-        return filters.mapRange(midi[0].data.buffer[1], 0, 127, -17873, 17873)  # CC    FADER	    AXIS
+        return filters.mapRange(midi[0].data.buffer[1], 0, 127, -16382, 16382)  # CC    FADER	    AXIS
     # usage:  vJoy[0].x = map_cc_axis(slider_cc)
 
 def map_note_button(note, button):
 
     """ maps an X-Mini's midi note to a vJoy button """
 
-    vJoy[0].setPressed(button, midi[0].data.buffer[0] == note and midi[0].data.buffer[1] == 127
-                       and (midi[0].data.status == MidiStatus.NoteOn))
-
-
-#      Layer A: Rotary Encoders        #######################################  MIDI ## CONTROL ### X-PLANE ###
-
-base_button = 48    # type: int
-base_cc = 1         # type: int
-
-for n in range(8):
-    map_cc_buttons(base_cc + n, base_button + 2 * n, base_button + 2 * n + 1)  # CC  Encoders 1-8  Buttons 49-64
-
-
-#      Layer A: Slider                 #######################################  MIDI  ## CONTROL ### X-PLANE ###
-
-slider_cc = 9                                                                   # CC9    Slider 1	  AXIS 1
-# slider_axis = vJoy[0].x
-
-if (midi[0].data.buffer[0] == slider_cc) and (midi[0].data.status == MidiStatus.Control):
-    vJoy[0].x = filters.mapRange(midi[0].data.buffer[1], 0, 127, -16382, 16382)
-
-
-#      Layer B: Rotary Encoders        #######################################  MIDI  ## CONTROL ### X-PLANE ###
-
-base_button = 64    # type: int
-base_cc = 11        # type: int
-
-for n in range(8):
-    map_cc_buttons(base_cc + n, base_button + 2 * n, base_button + 2 * n + 1)   # CC  Encoders 9-16  Buttons 65-80
-
-
-#      Layer B: Slider                 #######################################  MIDI  ## CONTROL ### X-PLANE ###
-
-slider_cc = 10                                                                  # CC10   Slider 1	  AXIS 2
-# slider_axis = vJoy[0].y
-
-if (midi[0].data.buffer[0] == slider_cc) and (midi[0].data.status == MidiStatus.Control):
-    vJoy[0].y = filters.mapRange(midi[0].data.buffer[1], 0, 127, -16382, 16382)
-
+    buttons[button] = (midi[0].data.buffer[0] == note and midi[0].data.buffer[1] == 127
+        and (midi[0].data.status == MidiStatus.NoteOn))
+#    vJoy[0].setPressed(button, midi[0].data.buffer[0] == note and midi[0].data.buffer[1] == 127
+#                       and (midi[0].data.status == MidiStatus.NoteOn))
 
 #      Layer A: Encoder Buttons        #######################################  MIDI  ## CONTROL ### X-PLANE ###
 
@@ -162,24 +128,56 @@ base_note = 8       # type: int
 for n in range(16):
     map_note_button(base_note + n, base_button + n)                             # Note Sqr Button 9-24 Buttons 9-24
 
+#      Layer A: Rotary Encoders        #######################################  MIDI ## CONTROL ### X-PLANE ###
+
+base_button = 24    # type: int
+base_cc = 1         # type: int
+
+for n in range(8):
+    map_cc_buttons(base_cc + n, base_button + 2 * n, base_button + 2 * n + 1)  # CC  Encoders 1-8  Buttons 25-40
+
+#      Layer A: Slider                 #######################################  MIDI  ## CONTROL ### X-PLANE ###
+
+slider_cc = 9                                                                   # CC9    Slider 1	  AXIS 1
+x_val = map_cc_axis(slider_cc)
+if x_val is not None:
+	vJoy[0].x = x_val
 
 #      Layer B: Encoder Buttons        #######################################  MIDI  ## CONTROL ### X-PLANE ###
 
-base_button = 24    # type: int
+base_button = 40    # type: int
 base_note = 24      # type: int
 
 for n in range(8):
-    map_note_button(base_note + n, base_button + n)                             # Note  Encoders 9-16 Buttons 25-32
-
+    map_note_button(base_note + n, base_button + n)                             # Note  Encoders 9-16 Buttons 41-48
 
 #      Layer B: Square Buttons         #######################################  MIDI  ## CONTROL ### X-PLANE ###
 
-base_button = 32    # type: int
+base_button = 48    # type: int
 base_note = 32      # type: int
 
 for n in range(16):
-    map_note_button(base_note + n, base_button + n)                             # Note Sqr Button 33-48 Buttons 33-48
+    map_note_button(base_note + n, base_button + n)                             # Note Sqr Button 33-48 Buttons 49-64
 
+#      Layer B: Rotary Encoders        #######################################  MIDI  ## CONTROL ### X-PLANE ###
+
+base_button = 64    # type: int
+base_cc = 11        # type: int
+
+for n in range(8):
+    map_cc_buttons(base_cc + n, base_button + 2 * n, base_button + 2 * n + 1)   # CC  Encoders 9-16  Buttons 65-80
+
+
+#      Layer B: Slider                 #######################################  MIDI  ## CONTROL ### X-PLANE ###
+
+slider_cc = 10                                                                  # CC10   Slider 1	  AXIS 2
+y_val = map_cc_axis(slider_cc)
+if y_val is not None:
+	vJoy[0].y = y_val
+
+
+for button, pressed in buttons.items():
+    vJoy[0].setButton(button, pressed)
 
 #      Midi Monitor for FreePIE's Console      ###############
 

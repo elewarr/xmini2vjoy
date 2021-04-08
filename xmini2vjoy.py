@@ -35,20 +35,20 @@
 #                   the file gets saved as xmini2vjoy.py                                 #
 #                                                                                        #
 #                   5. On the same folder, make a new text file named                    #
-#                   xmini2vjoy.bat with the following contents:                     	 #
+#                   xmini2vjoy.bat with the following contents:                          #
 #                                                                                        #
 #                        @echo off                                                       #
 #                        START /min FreePIE.exe "xmini2vjoy.py" /r                       #
 #                                                                                        #
-#                   6. Create a link to this file (xmini2vjoy.bat)                   	 #
+#                   6. Create a link to this file (xmini2vjoy.bat)                       #
 #                   and place it on the desktop. Run it before starting                  #
-#                   X-plane. On X-Plane settings you'll see the virtual	    			 #
-# 					joystick and will be able to assign its axes and                     #
+#                   X-plane. On X-Plane settings you'll see the virtual                  #
+#                   joystick and will be able to assign its axes and                     #
 #                   buttons to control the sim's functions, or manage                    #
 #                   them assisted by FlyWithLua.                                         #
 #                                                                                        #
 #                                                                                        #
-#                          Josep Zambrano, December 30, 2019                       		 #
+#                          Josep Zambrano, December 30, 2019                             #
 #                                                                                        #
 #                                                                                        #
 #                                                                                        #
@@ -82,7 +82,7 @@ def map_cc_buttons(cc, button1, button2):
     if (midi[0].data.buffer[0] == cc) and (midi[0].data.status == MidiStatus.Control):
         speed = midi[0].data.buffer[1]
         drive = speed - 64
-        times = abs(drive)
+        times = abs(int(drive*1.5))
         if drive < 0:
             for i in range(times):
                 vJoy[0].setPressed(button1)
@@ -100,7 +100,7 @@ def map_cc_axis(cc):
     """ maps an X-Mini's slider to a vJoy axis, axis value returned """
 
     if (midi[0].data.buffer[0] == cc) and (midi[0].data.status == MidiStatus.Control):
-        return filters.mapRange(midi[0].data.buffer[1], 0, 127, -16382, 16382)  # CC    FADER	    AXIS
+        return filters.mapRange(midi[0].data.buffer[1], 0, 127, -16382, 16382)  # CC    FADER       AXIS
     # usage:  vJoy[0].x = map_cc_axis(slider_cc)
 
 def map_note_button(note, button):
@@ -138,10 +138,10 @@ for n in range(8):
 
 #      Layer A: Slider                 #######################################  MIDI  ## CONTROL ### X-PLANE ###
 
-slider_cc = 9                                                                   # CC9    Slider 1	  AXIS 1
+slider_cc = 9                                                                   # CC9    Slider 1     AXIS 1
 x_val = map_cc_axis(slider_cc)
 if x_val is not None:
-	vJoy[0].x = x_val
+    vJoy[0].x = x_val
 
 #      Layer B: Encoder Buttons        #######################################  MIDI  ## CONTROL ### X-PLANE ###
 
@@ -170,10 +170,10 @@ for n in range(8):
 
 #      Layer B: Slider                 #######################################  MIDI  ## CONTROL ### X-PLANE ###
 
-slider_cc = 10                                                                  # CC10   Slider 1	  AXIS 2
+slider_cc = 10                                                                  # CC10   Slider 1     AXIS 2
 y_val = map_cc_axis(slider_cc)
 if y_val is not None:
-	vJoy[0].y = y_val
+    vJoy[0].y = y_val
 
 
 for button, pressed in buttons.items():
